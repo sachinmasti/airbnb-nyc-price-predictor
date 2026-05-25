@@ -165,31 +165,6 @@ def healthz():
         'model_path': str(resolved_path) if resolved_path else None
     })
 
-@app.route('/debug-files', methods=['GET'])
-def debug_files():
-    visible_root = BASE_DIR.parent if BASE_DIR.parent.exists() else BASE_DIR
-    files = sorted(
-        str(path.relative_to(visible_root))
-        for path in visible_root.rglob('*')
-        if path.is_file()
-    )
-    return jsonify({
-        'base_dir': str(BASE_DIR),
-        'cwd': str(Path.cwd()),
-        'model_path': str(resolve_model_path()) if resolve_model_path() else None,
-        'files': files[:200]
-    })
-
-@app.route('/model-status', methods=['GET'])
-def model_status():
-    active_model = get_model()
-    return jsonify({
-        'model_available': active_model is not None,
-        'fallback_available': True,
-        'model_path': str(model_path) if model_path else None,
-        'model_load_error': model_load_error
-    }), 200 if active_model is not None else 500
-
 @app.route('/api/locations', methods=['GET'])
 def get_locations():
     """
