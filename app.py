@@ -110,6 +110,46 @@ def haversine_distance(lat1, lon1, lat2=40.7580, lon2=-73.9855):
     c = 2 * np.arcsin(np.sqrt(a))
     return r * c
 
+
+def fallback_price_estimate(
+    neighbourhood_group,
+    room_type,
+    minimum_nights,
+    number_of_reviews,
+    availability_365,
+    distance_to_times_square_km,
+    is_luxury,
+    is_cozy,
+    is_studio,
+    is_subway,
+):
+    borough_base = {
+        'Manhattan': 180,
+        'Brooklyn': 115,
+        'Queens': 90,
+        'Bronx': 70,
+        'Staten Island': 75,
+    }
+    room_multiplier = {
+        'Entire home/apt': 1.45,
+        'Private room': 0.75,
+        'Shared room': 0.45,
+    }
+
+    price = borough_base.get(neighbourhood_group, 95)
+    price *= room_multiplier.get(room_type, 0.75)
+
+    price += max(0, 35 - distance_to_times_square_km) * 1.2
+    price += 25 if is_luxury else 0
+    price += 8 if is_cozy else 0
+    price += 12 if is_studio else 0
+    price += 10 if is_subway else 0
+    price += min(number_of_reviews, 200) * 0.08
+    price += min(availability_365, 365) * 0.03
+    price -= min(max(minimum_nights - 1, 0), 30) * 0.8
+
+    return max(10.0, float(price))
+
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -145,6 +185,7 @@ def model_status():
     active_model = get_model()
     return jsonify({
         'model_available': active_model is not None,
+        'fallback_available': True,
         'model_path': str(model_path) if model_path else None,
         'model_load_error': model_load_error
     }), 200 if active_model is not None else 500
@@ -161,13 +202,6 @@ def predict():
     """
     Endpoint to receive inputs, compute features on the fly, run inference, and return predictions.
     """
-    active_model = get_model()
-    if active_model is None:
-        return jsonify({
-            'error': 'Model is not available.',
-            'details': model_load_error or 'Unknown model loading error.'
-        }), 500
-            
     try:
         data = request.json
         
@@ -250,8 +284,24 @@ def predict():
         
         X_input = pd.DataFrame(feature_dict)
         
-        # Perform prediction
-        pred_price = active_model.predict(X_input)[0]
+        active_model = get_model()
+        used_fallback = active_model is None
+
+        if used_fallback:
+            pred_price = fallback_price_estimate(
+                neighbourhood_group=neighbourhood_group,
+                room_type=room_type,
+                minimum_nights=minimum_nights,
+                number_of_reviews=number_of_reviews,
+                availability_365=availability_365,
+                distance_to_times_square_km=distance_to_times_square_km,
+                is_luxury=is_luxury,
+                is_cozy=is_cozy,
+                is_studio=is_studio,
+                is_subway=is_subway,
+            )
+        else:
+            pred_price = active_model.predict(X_input)[0]
         
         # Bound predicted price to be positive and realistic (since winsorization makes it between 5th and 90th percentile)
         pred_price = max(10.0, float(pred_price))
@@ -260,6 +310,7 @@ def predict():
         return jsonify({
             'success': True,
             'prediction': round(pred_price, 2),
+            'model_mode': 'fallback' if used_fallback else 'catboost',
             'derived_features': {
                 'distance_to_times_square_km': round(distance_to_times_square_km, 2),
                 'name_length': int(name_length),
