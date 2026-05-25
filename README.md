@@ -36,3 +36,7 @@ Flask UI for an NYC Airbnb nightly price prediction model trained with scikit-le
 ## Live Demo
 
 https://airbnb-nyc-price-predictor.onrender.com/
+
+## Deployment Note
+
+The deployed Render app includes a fallback estimator so the demo remains usable if the serialized Joblib model cannot be loaded in the hosting environment.
