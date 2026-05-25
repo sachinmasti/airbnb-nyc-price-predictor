@@ -33,3 +33,6 @@ Flask UI for an NYC Airbnb nightly price prediction model trained with scikit-le
 - `model_pipeline.py`: required for joblib deserialization.
 - `model_metadata.json`: compact location defaults generated from the feature engineering CSV.
 - `templates/` and `static/`: UI files.
+## Live Demo
+
+https://airbnb-nyc-price-predictor.onrender.com/
