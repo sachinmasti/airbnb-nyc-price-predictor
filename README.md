@@ -1,62 +1,104 @@
+# 🏠 NYC Airbnb Price Predictor
+
+> Estimate nightly Airbnb prices in New York City using listing details, neighbourhood, room type, reviews, and more — powered by a CatBoost ML model.
+
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20App-FF5A5F?style=for-the-badge&logo=airbnb&logoColor=white)](https://airbnb-nyc-price-predictor.onrender.com/)
+[![Python](https://img.shields.io/badge/Python-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-Backend-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
+
 ---
-title: Airbnb Price Predictor
-emoji: 🏠
-colorFrom: red
-colorTo: pink
-sdk: docker
-pinned: false
+
+## ✨ Features
+
+- 🔮 **Price Prediction** — Estimates nightly listing price based on multiple listing attributes
+- 🗺️ **Dynamic Dropdowns** — Borough and neighbourhood options update automatically
+- 🔑 **Keyword Analysis** — Detects title keywords like `luxury`, `cozy`, `studio`, `subway` to influence predictions
+- 📍 **Location Scoring** — Calculates distance from Times Square as a proximity feature
+- 📱 **Responsive UI** — Clean, mobile-friendly Flask web interface
+- 🛡️ **Fallback Estimator** — Rule-based fallback if the ML model fails to load in the hosting environment
+
 ---
 
-# Airbnb Price Predictor
+## 🛠️ Tech Stack
 
-Flask UI for an NYC Airbnb nightly price prediction model trained with scikit-learn and CatBoost.
+| Layer | Technology |
+|---|---|
+| Backend | Python, Flask |
+| ML Model | CatBoost, scikit-learn |
+| Data Processing | Pandas, NumPy |
+| Frontend | HTML, CSS, JavaScript |
+| Deployment | Render (free tier) |
 
-## Deploy on Render free tier
+---
 
-1. Push this `deploy` folder to a GitHub repository.
-2. Create a new Render Web Service from that repository.
-3. Render can use `render.yaml`, or set these manually:
-   - Build command: `pip install -r requirements.txt`
-   - Start command: `gunicorn --bind 0.0.0.0:$PORT app:app`
-   - Python version: `3.12.8`
+## 📁 Project Structure
 
-## Deploy on Hugging Face Spaces
+```
+airbnb-price-predictor/
+│
+├── app.py                  # Flask backend & prediction endpoints
+├── airbnb_model.joblib     # Trained model artifact
+├── model_pipeline.py       # Pipeline helper for deserialization
+├── model_metadata.json     # Location defaults from feature engineering
+├── requirements.txt        # Python dependencies
+│
+├── templates/              # Jinja2 HTML templates
+└── static/                 # CSS & JavaScript assets
+```
 
-1. Create a new Space.
-2. Choose Docker as the Space SDK.
-3. Upload the files from this folder.
+---
 
-## Files kept for deployment
+## 🚀 Getting Started
 
-- `app.py`: Flask backend and prediction endpoints.
-- `airbnb_model.joblib`: trained model.
-- `model_pipeline.py`: required for joblib deserialization.
-- `model_metadata.json`: compact location defaults generated from the feature engineering CSV.
-- `templates/` and `static/`: UI files.
-## Live Demo
+### Prerequisites
 
-https://airbnb-nyc-price-predictor.onrender.com/
+- Python 3.x
+- pip
 
-## Deployment Note
+### Run Locally
 
-The deployed Render app includes a fallback estimator so the demo remains usable if the serialized Joblib model cannot be loaded in the hosting environment.
+```bash
+# 1. Clone the repository
+git clone https://github.com/your-username/airbnb-nyc-price-predictor.git
+cd airbnb-nyc-price-predictor
 
-## Tech Stack
+# 2. Install dependencies
+pip install -r requirements.txt
 
-- Python
-- Flask
-- scikit-learn
-- CatBoost
-- Pandas
-- NumPy
-- HTML, CSS, JavaScript
-- Render
+# 3. Start the Flask server
+python app.py
+```
 
-## Features
+Then open `http://localhost:5000` in your browser.
 
-- Predicts estimated nightly Airbnb listing price
-- Dynamic borough and neighbourhood dropdowns
-- Uses listing title keywords such as luxury, cozy, studio, and subway
-- Calculates distance from Times Square
-- Responsive Flask web UI
-- Deployed on Render free tier
+---
+
+## ☁️ Deploy on Render
+
+1. Push your code to a GitHub repository
+2. Connect the repo to [Render](https://render.com)
+3. Use the following settings:
+
+| Setting | Value |
+|---|---|
+| **Build Command** | `pip install -r requirements.txt` |
+| **Start Command** | `gunicorn --bind 0.0.0.0:$PORT app:app` |
+
+> **Note:** The app includes a rule-based fallback estimator so the demo stays usable even if the serialized `.joblib` model cannot be loaded in the Render environment.
+
+---
+
+## 🤝 Contributing
+
+Pull requests are welcome! For major changes, please open an issue first to discuss what you'd like to change.
+
+---
+
+## 📄 License
+
+This project is open source. Feel free to use and modify it for your own projects.
+
+---
+
+<p align="center">Made with ❤️ | Deployed on <a href="https://render.com">Render</a></p>
