@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraBnb - AI Nightly Price Predictor</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Animated Canvas Background -->
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="background-decorations">
+        <div class="circle circle-1"></div>
+        <div class="circle circle-2"></div>
+        <div class="circle circle-3"></div>
+        <div class="grid-overlay"></div>
+    </div>
+
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>AuraBnb <span class="badge-ai">AI</span></span>
+            </div>
+            <h1>Estimate Your NYC Listing Value</h1>
+            <p class="subtitle">Enter your listing details below. Our CatBoost Machine Learning model will estimate the optimal nightly price.</p>
+        </header>
+
+        <main class="dashboard-grid">
+            <!-- Form Section -->
+            <section class="card glass-card form-section">
+                <form id="prediction-form" autocomplete="off">
+                    
+                    <!-- Listing Name Input -->
+                    <div class="input-group full-width">
+                        <label for="name">
+                            <i class="fa-solid fa-signature"></i> Listing Title
+                        </label>
+                        <input type="text" id="name" name="name" placeholder="e.g., Cozy Private Bedroom near Times Square Subway" required>
+                        <div class="helper-text">Name length: <span id="char-counter">0</span> characters. Try keywords like: <em>Luxury, Cozy, Studio, Subway</em>.</div>
+                    </div>
+
+                    <!-- Dynamic Keyword Badges -->
+                    <div class="keyword-badges-container full-width">
+                        <span class="badge" id="badge-luxury"><i class="fa-solid fa-crown"></i> Luxury</span>
+                        <span class="badge" id="badge-cozy"><i class="fa-solid fa-couch"></i> Cozy</span>
+                        <span class="badge" id="badge-studio"><i class="fa-solid fa-door-open"></i> Studio</span>
+                        <span class="badge" id="badge-subway"><i class="fa-solid fa-train-subway"></i> Subway</span>
+                    </div>
+
+                    <!-- Row 1: Location Selection -->
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label for="neighbourhood_group">
+                                <i class="fa-solid fa-map-location-dot"></i> Borough (Boro Group)
+                            </label>
+                            <select id="neighbourhood_group" name="neighbourhood_group" required>
+                                <option value="" disabled selected>Select Borough</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="neighbourhood">
+                                <i class="fa-solid fa-tree-city"></i> Neighbourhood
+                            </label>
+                            <select id="neighbourhood" name="neighbourhood" required disabled>
+                                <option value="" disabled selected>Select Borough First</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Room Type & Min Nights -->
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label for="room_type">
+                                <i class="fa-solid fa-house-user"></i> Room Type
+                            </label>
+                            <select id="room_type" name="room_type" required>
+                                <option value="Entire home/apt">Entire Home / Apartment</option>
+                                <option value="Private room" selected>Private Room</option>
+                                <option value="Shared room">Shared Room</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="minimum_nights">
+                                <i class="fa-solid fa-calendar-day"></i> Min Nights
+                            </label>
+                            <input type="number" id="minimum_nights" name="minimum_nights" value="1" min="1" max="365" required>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Reviews & Availability -->
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label for="number_of_reviews">
+                                <i class="fa-solid fa-star-half-stroke"></i> Total Reviews
+                            </label>
+                            <input type="number" id="number_of_reviews" name="number_of_reviews" value="10" min="0" max="1000" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="availability_365">
+                                <i class="fa-solid fa-calendar-check"></i> Yearly Availability
+                            </label>
+                            <input type="number" id="availability_365" name="availability_365" value="180" min="0" max="365" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-predict" id="btn-submit">
+                        <span class="btn-text">Estimate Price</span>
+                        <i class="fa-solid fa-circle-notch fa-spin btn-loader" style="display: none;"></i>
+                    </button>
+
+                </form>
+            </section>
+
+            <!-- Result Section -->
+            <section class="result-section">
+                <!-- Main Price Card -->
+                <div class="card glass-card price-card">
+                    <div class="card-glow"></div>
+                    <h3>Estimated Value</h3>
+                    <div class="price-display">
+                        <span class="currency">$</span>
+                        <span class="price-value" id="predicted-price">--</span>
+                        <span class="per-night">/ night</span>
+                    </div>
+                    <p class="price-disclaimer">Estimates are based on historical NYC Airbnb listings data and model accuracy metrics ($R^2$ = 62.7%).</p>
+                </div>
+
+                <!-- Derived Features Info -->
+                <div class="card glass-card info-card" id="details-card">
+                    <h4><i class="fa-solid fa-chart-line"></i> Inside the AI Prediction</h4>
+                    <ul class="details-list">
+                        <li>
+                            <span class="detail-label">Distance to Times Square:</span>
+                            <span class="detail-val" id="detail-distance">-- km</span>
+                        </li>
+                        <li>
+                            <span class="detail-label">Extracted Features:</span>
+                            <span class="detail-val" id="detail-extracted">None detected</span>
+                        </li>
+                        <li>
+                            <span class="detail-label">Imputed Lat/Lon Coordinates:</span>
+                            <span class="detail-val" id="detail-coords">-- , --</span>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Made with <i class="fa-solid fa-heart" style="color: #FF5A5F;"></i> for Airbnb NYC Pricing Project. Powered by CatBoost Regressor.</p>
+        </footer>
+    </div>
+
+    <!-- Script file -->
+    <script src="/static/script.js"></script>
+</body>
+</html>
