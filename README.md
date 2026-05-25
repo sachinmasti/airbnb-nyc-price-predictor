@@ -51,3 +51,12 @@ The deployed Render app includes a fallback estimator so the demo remains usable
 - NumPy
 - HTML, CSS, JavaScript
 - Render
+
+## Features
+
+- Predicts estimated nightly Airbnb listing price
+- Dynamic borough and neighbourhood dropdowns
+- Uses listing title keywords such as luxury, cozy, studio, and subway
+- Calculates distance from Times Square
+- Responsive Flask web UI
+- Deployed on Render free tier
