@@ -40,3 +40,14 @@ https://airbnb-nyc-price-predictor.onrender.com/
 ## Deployment Note
 
 The deployed Render app includes a fallback estimator so the demo remains usable if the serialized Joblib model cannot be loaded in the hosting environment.
+
+## Tech Stack
+
+- Python
+- Flask
+- scikit-learn
+- CatBoost
+- Pandas
+- NumPy
+- HTML, CSS, JavaScript
+- Render
